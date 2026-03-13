@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+    <title>Ujian YCT 2 - 40 Soal</title>
+    <style>
+        :root { --gold: #D4AF37; --mint: #E8F8F5; --right: #2ecc71; --wrong: #ff7675; }
+        body { background: #FDFBF7; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 20px; border: 6px solid var(--gold); text-align: center; position: relative; }
+        
+        /* Judul Kanan Atas */
+        .header-title { position: absolute; top: 15px; right: 20px; font-weight: bold; color: var(--gold); font-size: 0.9em; }
+        
+        .q-box { font-size: 1.5em; font-weight: bold; margin-top: 40px; margin-bottom: 25px; min-height: 100px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
+        ruby { font-size: 1.2em; margin: 0 2px; }
+        rt { font-size: 0.5em; color: #555; }
+        .blank { border-bottom: 2px solid #D4AF37; padding: 0 10px; margin: 0 5px; color: #D4AF37; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn { padding: 15px; font-size: 1.3em; background: var(--mint); border: 2px solid #ddd; border-radius: 10px; cursor: pointer; }
+        .btn.selected { border: 3px solid var(--gold); }
+        .correct { background: var(--right) !important; color: white; }
+        .wrong { background: var(--wrong) !important; color: white; }
+        .nav { margin-top: 30px; display: flex; justify-content: center; gap: 10px; }
+        button { padding: 10px 20px; font-size: 1.2em; cursor: pointer; background: var(--gold); color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title">YCT2-lcnpalembang-08994477998</div>
+    <div id="quiz"></div>
+    <div class="nav">
+        <button onclick="prev()">⬅️</button>
+        <span id="counter" style="align-self:center;">1/40</span>
+        <button onclick="next()">➡️</button>
+        <button id="submitBtn" style="display:none; background: #27ae60;" onclick="submitQuiz()">Submit 📩</button>
+    </div>
+</div>
+
+<script>
+    // Data 40 Soal
+    const rawQuestions = [
+        { q: "我有一只(      )", p: "wǒ yǒu yī zhī (      )", icon: "🐱", options: ["狗", "猫", "鸟", "鱼"], ans: "猫" },
+        { q: "我喜欢喝(      )", p: "wǒ xǐhuān hē (      )", icon: "🥛", options: ["水", "茶", "牛奶", "果汁"], ans: "牛奶" },
+        { q: "我的(      )很大", p: "wǒ de (      ) hěn dà", icon: "👀", options: ["鼻子", "嘴巴", "头发", "眼睛"], ans: "眼睛" },
+        { q: "姐姐在(      )苹果", p: "jiějie zài (      ) píngguǒ", icon: "🍎", options: ["吃", "喝", "看", "去"], ans: "吃" },
+        { q: "现在几(      )", p: "xiànzài jǐ (      )", icon: "⏰", options: ["岁", "点", "号", "个"], ans: "点" },
+        { q: "我去(      )", p: "wǒ qù (      )", icon: "🏫", options: ["商店", "医院", "学校", "家"], ans: "学校" },
+        { q: "我家有四(      )人", p: "wǒjiā yǒu sì (      ) rén", icon: "👨‍👩‍👧‍👦", options: ["个", "只", "本", "口"], ans: "口" },
+        { q: "他是我的(      )", p: "tā shì wǒ de (      )", icon: "👦", options: ["哥哥", "弟弟", "妹妹", "姐姐"], ans: "哥哥" },
+        { q: "很高兴(      )你", p: "hěn gāoxìng (      ) nǐ", icon: "🤝", options: ["漂亮", "认识", "喜欢", "多少"], ans: "认识" },
+        { q: "女孩很(      )", p: "nǚhái hěn (      )", icon: "🎀", options: ["医生", "红色", "漂亮", "朋友"], ans: "漂亮" },
+        { q: "妈妈是(      )", p: "māma shì (      )", icon: "👩‍⚕️", options: ["老师", "学生", "朋友", "医生"], ans: "医生" },
+        { q: "你喜欢(      )什么", p: "nǐ xǐhuān (      ) shénme", icon: "😋", options: ["喜欢", "认识", "看", "喝"], ans: "吃" },
+        { q: "苹果多少(      )", p: "píngguǒ duōshǎo (      )", icon: "💰", options: ["几", "钱", "什么", "哪儿"], ans: "钱" },
+        { q: "她的(      )很长", p: "tā de (      ) hěn cháng", icon: "💇", options: ["眼睛", "个子", "头发", "手"], ans: "头发" },
+        { q: "明天是(      )", p: "míngtiān shì (      )", icon: "☀️", options: ["昨天", "去年", "月", "星期四"], ans: "星期四" },
+        { q: "我有一个好(      )", p: "wǒ yǒu yīgè hǎo (      )", icon: "👫", options: ["朋友", "老师", "医生", "哥哥"], ans: "朋友" },
+        { q: "你在看(      )", p: "nǐ zài kàn (      )", icon: "👁️", options: ["吃", "看", "什么", "叫"], ans: "什么" },
+        { q: "我最喜欢(      )", p: "wǒ zuì xǐhuān (      )", icon: "🔴", options: ["头发", "名字", "红色", "老师"], ans: "红色" },
+        { q: "现在是(      )", p: "xiànzài shì (      )", icon: "🕙", options: ["书", "明天", "去年", "上午"], ans: "上午" },
+        { q: "他去(      )", p: "tā qù (      )", icon: "🚶", options: ["去", "喝", "看", "学校"], ans: "学校" },
+        { q: "这是我的(      )", p: "zhè shì wǒ de (      )", icon: "📖", options: ["我", "书", "你", "他"], ans: "书" },
+        { q: "你会(      )吗", p: "nǐ huì (      ) ma", icon: "🍳", options: ["老师", "猫", "做饭", "狗"], ans: "做饭" },
+        { q: "弟弟今年(      )岁", p: "dìdi jīnnián (      ) suì", icon: "🎂", options: ["明天", "昨天", "月", "五"], ans: "五" },
+        { q: "我叫(      )", p: "wǒ jiào (      )", icon: "🗣️", options: ["大卫", "是", "在", "去"], ans: "大卫" },
+        { q: "他是我的(      )", p: "tā shì wǒ de (      )", icon: "👨‍🏫", options: ["吃", "老师", "看", "喝"], ans: "老师" },
+        { q: "星期(      )有课", p: "xīngqī (      ) yǒu kè", icon: "1️⃣", options: ["个", "点", "一", "岁"], ans: "一" },
+        { q: "妈妈去(      )", p: "māma qù (      )", icon: "🛒", options: ["喝", "看", "吃", "商店"], ans: "商店" },
+        { q: "这是一个(      )", p: "zhè shì yīgè (      )", icon: "☕", options: ["杯子", "一口", "一只", "一本"], ans: "杯子" },
+        { q: "我是(      )", p: "wǒ shì (      )", icon: "🎒", options: ["去", "学生", "看", "喝"], ans: "学生" },
+        { q: "他在(      )", p: "tā zài (      )", icon: "😴", options: ["苹果", "猫", "睡觉", "老师"], ans: "睡觉" },
+        { q: "桌上有(      )", p: "zhuō shàng yǒu (      )", icon: "📚", options: ["坐", "吃", "喝", "书"], ans: "书" },
+        { q: "你住在(      )", p: "nǐ zhù zài (      )", icon: "🏠", options: ["住在", "是", "哪儿", "吃"], ans: "哪儿" },
+        { q: "他有一部(      )", p: "tā yǒu yī bù (      )", icon: "📱", options: ["一个", "手机", "一口", "一只"], ans: "手机" },
+        { q: "天气很(      )", p: "tiānqì hěn (      )", icon: "☀️", options: ["吃", "喝", "好", "看"], ans: "好" },
+        { q: "我想(      )", p: "wǒ xiǎng (      )", icon: "🚶", options: ["书", "猫", "狗", "去"], ans: "去" },
+        { q: "你会说(      )吗", p: "nǐ huì shuō (      ) ma", icon: "🇨🇳", options: ["汉语", "喝", "吃", "看"], ans: "汉语" },
+        { q: "我们要(      )", p: "wǒmen yào (      )", icon: "📝", options: ["苹果", "学习", "猫", "狗"], ans: "学习" },
+        { q: "那个(      )很好", p: "nàge (      ) hěn hǎo", icon: "🎬", options: ["喝", "吃", "电影", "看"], ans: "电影" },
+        { q: "我不在(      )", p: "wǒ bù (      )", icon: "🤔", options: ["喝", "吃", "看", "知道"], ans: "知道" },
+        { q: "谢谢(      )", p: "xièxie (      )", icon: "🙏", options: ["你", "喝", "吃", "看"], ans: "你" }
+    ];
+
+    function createRuby(text, pinyin) {
+        let hArr = text.split('');
+        let pArr = pinyin.split(' ');
+        return hArr.map((h, i) => h === '(' ? '<span class="blank">(      )</span>' : 
+            `<ruby>${h}<rt>${pArr[i] || ''}</rt></ruby>`).join('');
+    }
+
+    function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+    let questions = shuffle(rawQuestions.map(q => {
+        let opts = shuffle([...q.options]);
+        return { ...q, options: opts, ansIdx: opts.indexOf(q.ans) };
+    }));
+
+    let cur = 0, userAnswers = new Array(40).fill(null), isSubmitted = false;
+
+    function render() {
+        let item = questions[cur];
+        document.getElementById('quiz').innerHTML = `
+            <div class="q-box"><span style="font-size:2em; margin-right:15px;">${item.icon}</span> ${createRuby(item.q, item.p)}</div>
+            <div class="options">
+                ${item.options.map((o, i) => `<div class="btn ${isSubmitted && i === item.ansIdx ? 'correct' : ''} ${isSubmitted && userAnswers[cur] === i && i !== item.ansIdx ? 'wrong' : ''} ${!isSubmitted && userAnswers[cur] === i ? 'selected' : ''}" onclick="select(${i})">${o}</div>`).join('')}
+            </div>`;
+        document.getElementById('counter').innerText = `${cur + 1}/40`;
+        document.getElementById('submitBtn').style.display = (cur === 39) ? 'block' : 'none';
+    }
+
+    function select(i) { if (!isSubmitted) { userAnswers[cur] = i; render(); } }
+    function submitQuiz() { isSubmitted = true; render(); alert('Ujian Selesai! Cek jawaban Anda.'); }
+    function next() { if(cur < 39) { cur++; render(); } }
+    function prev() { if(cur > 0) { cur--; render(); } }
+    render();
+</script>
+</body>
+</html>
